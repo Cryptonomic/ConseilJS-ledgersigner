@@ -61,8 +61,8 @@
     "instrument": true
   },
   "dependencies": {
-    "@ledgerhq/hw-transport": "6.3.0",
-    "@ledgerhq/hw-transport-node-hid": "6.3.0",
+    "@ledgerhq/hw-transport": "5.51.1",
+    "@ledgerhq/hw-transport-node-hid": "5.51.1",
     "bip32-path": "0.4.2",
     "conseiljs": "5.0.8-3"
   },
@@ -72,7 +72,7 @@
     "@typescript-eslint/parser": "4.15.0",
     "eslint": "7.15.0",
     "ts-node": "9.1.1",
-    "typedoc": "0.18.0",
+    "typedoc": "0.21.9",
     "typescript": "3.8.3"
   },
   "engines": {
