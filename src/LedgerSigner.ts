@@ -1,6 +1,12 @@
 import { Signer, SignerCurve, TezosMessageUtils } from 'conseiljs';
 
-import { TezosLedgerConnector } from './TezosLedgerConnector'
+import { TezosLedgerConnector, Curve } from './TezosLedgerConnector'
+
+const curveMap = {
+    [SignerCurve.ED25519]: Curve.ED25519,
+    [SignerCurve.SECP256K1]: Curve.SECP256K1,
+    [SignerCurve.SECP256R1]: Curve.SECP256R1
+}
 
 /**
  *  
@@ -8,14 +14,16 @@ import { TezosLedgerConnector } from './TezosLedgerConnector'
 export class LedgerSigner implements Signer {
     readonly derivationPath: string;
     readonly connector: TezosLedgerConnector;
+    readonly curve: SignerCurve;
 
-    constructor(connector: TezosLedgerConnector, derivationPath: string) {
+    constructor(connector: TezosLedgerConnector, derivationPath: string, curve: SignerCurve = SignerCurve.ED25519) {
         this.connector = connector;
         this.derivationPath = derivationPath;
+        this.curve = curve;
     }
 
     public getSignerCurve(): SignerCurve {
-        return SignerCurve.ED25519
+        return this.curve;
     }
 
     /**
@@ -25,7 +33,7 @@ export class LedgerSigner implements Signer {
      * @param watermarkedOpInHex Operation
      */
     public async signOperation(bytes: Buffer): Promise<Buffer> {
-        const result = await this.connector.signOperation(this.derivationPath, bytes);
+        const result = await this.connector.signOperation(this.derivationPath, bytes, curveMap[this.curve]);
         const signatureBytes = Buffer.from(result, 'hex');
 
         return signatureBytes;
@@ -38,7 +46,7 @@ export class LedgerSigner implements Signer {
      * @returns {Promise<string>} base58check-encoded signature prefixed with 'edsig'.
      */
     public async signText(message: string): Promise<string> {
-        const result = await this.connector.signHex(this.derivationPath, Buffer.from(message, 'utf8'));
+        const result = await this.connector.signHex(this.derivationPath, Buffer.from(message, 'utf8'), curveMap[this.curve]);
         const messageSig = Buffer.from(result, 'hex');
 
         return TezosMessageUtils.readSignatureWithHint(messageSig, 'edsig');
@@ -52,7 +60,7 @@ export class LedgerSigner implements Signer {
      */
     public async signTextHash(message: string): Promise<string> {
         const messageHash = TezosMessageUtils.simpleHash(Buffer.from(message, 'utf8'), 32);
-        const result = await this.connector.signHex(this.derivationPath, messageHash);
+        const result = await this.connector.signHex(this.derivationPath, messageHash, curveMap[this.curve]);
         const messageSig = Buffer.from(result, 'hex');
 
         return TezosMessageUtils.readSignatureWithHint(messageSig, 'edsig');

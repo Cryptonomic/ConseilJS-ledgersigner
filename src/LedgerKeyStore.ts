@@ -9,7 +9,7 @@ import { TezosLedgerConnector } from './TezosLedgerConnector';
 export namespace KeyStoreUtils {
     export async function unlockAddress(derivationPath: string): Promise<KeyStore> {
         const hexEncodedPublicKey = await getTezosPublicKey(derivationPath);
-        const publicKeyBytes = Buffer.from(hexEncodedPublicKey, 'hex').slice(1); // We slice off a byte to make sure we have a 64 bits coming in from the ledger package
+        const publicKeyBytes = Buffer.from(hexEncodedPublicKey, 'hex').subarray(1); // We slice off a byte to make sure we have a 64 bits coming in from the ledger package
         const publicKey = TezosMessageUtils.readKeyWithHint(publicKeyBytes, "edpk");
         const publicKeyHash = TezosMessageUtils.computeKeyHash(publicKeyBytes, 'tz1');
 
@@ -22,7 +22,7 @@ export namespace KeyStoreUtils {
      * @param derivationPath BIP32/44 derivation path
      */
     export async function getTezosPublicKey(derivationPath: string): Promise<string> {
-        const xtz = await TezosLedgerConnector.getInstance();
-        return xtz.getAddress(derivationPath, true);
+        const connector = await TezosLedgerConnector.getInstance();
+        return connector.getPublicKey(derivationPath, true);
     }
 }
